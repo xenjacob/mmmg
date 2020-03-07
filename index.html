@@ -108,6 +108,14 @@ function keyevent2(e) {
     allOff(midiMeat);
     break;
   }
+  case 'KeyQ': {
+    jumpAndGrind(midiMeat, 0);
+    break;
+  }
+  case 'KeyZ': {
+    jumpAndGrind(midiMeat, Math.floor(Math.random()*midiMeat.events.length));
+    break;
+  }
   default: {
       grindOnce(midiMeat);
     }

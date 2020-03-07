@@ -131,6 +131,12 @@ function regrind(grinderobj) {
   grindOnce(grinderobj);
 }
 
+function jumpAndGrind(grinderobj, new_i) {
+  allOff(grinderobj);
+  i = new_i;
+  grindOnce(grinderobj);
+}
+
 let arp = -1;
 let pitches;
 function arpeggiate(grinderobj) {
