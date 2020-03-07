@@ -130,7 +130,7 @@ function regrind(grinderobj) {
   i = (i-1) % grinderobj.events.length;
   grindOnce(grinderobj);
 }
-/*
+
 let arp = -1;
 let pitches;
 function arpeggiate(grinderobj) {
@@ -142,11 +142,26 @@ function arpeggiate(grinderobj) {
       pitches.push(item.pitch);
     });
   }
-  arp = (arp+1) % pitches.length;
-  // turn off previous voice
-  allOff(grinderobj)
-
-}*/
+  arp++;
+  console.log(arp);
+  // after arpeggiating thru all, replay full chord & reset pitch memory
+  if(arp == pitches.length)
+  {
+    arp = -1;
+    pitches = [];
+    regrind(grinderobj);
+    return;
+  }
+  // turn off previous voice(s)
+  allOff(grinderobj);
+  // turn on this voice
+  grinderobj.voices.push(
+    player.queueWaveTable(audioContext,
+      audioContext.destination,
+      _tone_0000_JCLive_sf2_file, 0,
+      // pitch, max duration, amplitude
+      pitches[arp], 999, 0.2));
+}
 
 function allOff(grinderobj) {
   grinderobj.voices.forEach((item, index) => {
