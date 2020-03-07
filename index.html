@@ -91,14 +91,24 @@ function displayGrindInfo() {
 //let firstgrind = analmidi(wtc1);
  
 function keyevent2(e) {
-  if(e.code == 'KeyS') {
+  switch(e.code) {
+  case 'KeyS': {
     regrind(midiMeat);
+    break
   }
-  else {
-    if(e.code == 'KeyA') {
+  case 'KeyA': {
       backwardGrind(midiMeat);
+      break;
     }
-    else {
+  case 'KeyW': {
+    arpeggiate(midiMeat);
+    break;
+  }
+  case 'KeyQ': {
+    allOff(midiMeat);
+    break;
+  }
+  default: {
       grindOnce(midiMeat);
     }
   }

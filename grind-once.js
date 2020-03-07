@@ -130,6 +130,30 @@ function regrind(grinderobj) {
   i = (i-1) % grinderobj.events.length;
   grindOnce(grinderobj);
 }
+/*
+let arp = -1;
+let pitches;
+function arpeggiate(grinderobj) {
+  // going from full chord to voices; harvest the pitches
+  if(arp == -1)
+  { 
+    pitches = [];
+    grinderobj.voices.forEach((item, index) => {
+      pitches.push(item.pitch);
+    });
+  }
+  arp = (arp+1) % pitches.length;
+  // turn off previous voice
+  allOff(grinderobj)
+
+}*/
+
+function allOff(grinderobj) {
+  grinderobj.voices.forEach((item, index) => {
+    item.cancel();
+  });
+  grinderobj.voices = [];
+}
 
 // keyevent version 1
 // uses hardcoded queue array of nn values
