@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Soundfont-player example</title>
+  <style>
+    input[type="text"] {
+      width: 90%;
+      display: block;
+      font-size: 24px;
+    }
+    .instruments label {
+      display: inline-block;
+      width: 200px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <section>
+    <input type="text" id="notes" value="" />
+    <button action="play">Play it</button>
+  </section>
+  <section class="instruments"></section>
+  <script src="soundfont-player.js"></script>
+  <script>
+    var ctx = new AudioContext();
+    var soundfont = new Soundfont(ctx);
+    var inst = soundfont.instrument();
+
+    var notesField = document.getElementById("notes");
+    notesField.value = "C4 C#4 D4 D#4 E4 F4 F#4 G4 G#4 A4 A#4 B4 C5 B4 Bb4 A4 Ab4 G4 Gb4 F4 E4 Eb4 D4 Db4 C4";
+
+    var btn = document.querySelector("button[action=play]");
+    btn.setAttribute("disabled", true);
+    btn.addEventListener("click", function(e) {
+      var time = ctx.currentTime + 0.1;
+      notesField.value.split(" ").forEach(function(note) {
+        console.log("Scheduling...", note, time);
+        inst.play(note, time, 0.2);
+        time += 0.2;
+      });
+    });
+    
+    // You can also use MIDI inputs, if you have connected ones
+    function onMIDISuccess (midi) {
+      if (!inst.processMidiMessage) {
+        console.log('Loaded soundfont-player doesnt have parsing MIDI ability')
+        return
+      }
+      midi.inputs.forEach(function (port, channelKey) {
+        port.onmidimessage = inst.processMidiMessage
+        console.log('You can play MIDI events on your input %j', port)
+      })
+    }
+    function onMIDIFailure (error) {
+      console.log('Error while loading MIDI API %j', error)
+    }
+    function renewMIDIAccess () {
+      if (window.navigator && typeof window.navigator.requestMIDIAccess === 'function') {
+        console.log('Adding MIDI connection')
+        window.navigator.requestMIDIAccess().then(onMIDISuccess, onMIDIFailure)
+      } else {
+        console.log('MIDI API not available')
+      }
+    }
+    renewMIDIAccess()
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "./musyngkite.json");
+    xhr.send();
+    xhr.onreadystatechange = function () {
+      if (xhr.readyState !== 4) return;
+      if (xhr.status !== 200) return console.error("couldnt fetch instruments, defaulting to piano");
+
+      var section = document.querySelector(".instruments");
+
+      (JSON.parse(xhr.response) || []).sort().forEach(function (instrumentName) {
+        var radio = document.createElement("input");
+        var label = document.createElement("label");
+        radio.setAttribute("name", "instruments");
+        radio.setAttribute("type", "radio");
+        radio.setAttribute("value", instrumentName);
+        radio.addEventListener("change", function(e) {
+          var name = e.target.value;
+          console.log("Loading " + name + "...");
+          btn.setAttribute("disabled", true);
+          inst = soundfont.instrument(name);
+          console.log(inst);
+          inst.onready(function() {
+            console.log("Instrument " + name + " ready.");
+            btn.removeAttribute("disabled");
+            renewMIDIAccess()
+          });
+        });
+        label.appendChild(radio);
+        label.appendChild(document.createTextNode(instrumentName));
+        section.appendChild(label);
+      });
+    };
+
+  </script>
+
+</body>
+</html>

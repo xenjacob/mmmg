@@ -1,0 +1,124 @@
+<DOCTYPE html>
+
+	<head>
+		<title>The Mighty Meaty MIDI Grinder: An Aural Slideshow Tool</title>
+		<link rel="stylesheet" href="style.css">
+	</head>
+
+	<body>
+    <div id="upper">
+		<h1>The Mighty Meaty MIDI Grinder: An Aural Slideshow Tool</h1>
+    <p><a href="about.html">about</a></p>
+		<div id="FileDrop">
+			<div id="Text">
+				Drop a midi file here
+			</div>
+			<input type="file" accept="audio/midi">
+		</div>
+    <div id="grindinfo"></div>
+    <div id="selinst" hidden></div></div>
+    <img id="grinder" src="grinder0.png">
+    <button id="beginbtn" onmousedown="begingrind()" style="width: 100%"><center>Begin grind</center></button>
+    <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
+		<script src='https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js'></script>
+    	<script type="text/javascript" 
+    <script src="midi.js"></script>
+    <script src="grind-once.js"></script>
+    <script src="analmidi.js"></script>
+    <script src="example-jsons.js"></script>
+    <script>
+
+      function chooserIns(n) {
+			var html = '<select id="selins">';
+			for (var i = 0; i < player.loader.instrumentKeys().length; i++) {
+				var sel = '';
+				if (i == n) {
+					sel = ' selected';
+				}
+				html = html + '<option value="' + i + '"' + sel + '>' + i + ': ' + player.loader.instrumentInfo(i).title + '</option>';
+			}
+			html = "Choose a soundfont: " + html + '</select>';
+			return html;
+		}
+
+    document.getElementById('selinst').innerHTML = chooserIns(0)
+
+    let midiMeat;
+
+    if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+			document.querySelector("#FileDrop #Text").textContent = "Reading files not supported by this browser";
+		} else {
+
+    const fileDrop = document.querySelector("#FileDrop")
+
+    fileDrop.addEventListener("dragenter", () => fileDrop.classList.add("Hover"))
+
+    fileDrop.addEventListener("dragleave", () => fileDrop.classList.remove("Hover"))
+
+    fileDrop.addEventListener("drop", () => fileDrop.classList.remove("Hover"))
+
+    document.querySelector("#FileDrop input").addEventListener("change", e => {
+				//get the files
+      const files = e.target.files
+				if (files.length > 0){
+					const file = files[0];
+          parseFile(file);
+					document.querySelector("#FileDrop #Text").textContent = file.name
+					
+				}
+			})
+    }
+
+let currentMidi = null
+
+function parseFile(file){
+  //read the file
+  const reader = new FileReader()
+  reader.onload = function(e){
+    const midi = new Midi(e.target.result);
+    currentMidi = midi;
+    midiMeat = analmidi(currentMidi);
+    displayGrindInfo();
+    document.getElementById('grinder').src = "grinder2.png";
+  }
+  reader.readAsArrayBuffer(file)			
+}		
+
+function displayGrindInfo() {
+  document.getElementById('grindinfo').innerHTML = 
+  "<p>" + midiMeat.events.length + " temporally distinct events detected.</p>" + 
+  JSON.stringify(midiMeat);
+}
+//let firstgrind = analmidi(wtc1);
+ 
+function keyevent2(e) {
+  grindOnce(midiMeat);
+}
+
+document.getElementById('selins').onchange =  function(e) { 
+  insti = document.getElementById('selins').selectedIndex;
+  presetname = player.loader.instrumentKeys()[insti];
+  player.loader.decodeAfterLoading(audioContext, presetname)
+  currentinst = window[presetname];
+  console.log(currentinst);
+};
+
+function cleanUp() {
+  document.getElementById('beginbtn').style.display = "none";
+  document.getElementById('upper').style.display = "none";
+}
+function begingrind() {
+document.addEventListener('keydown',keyevent2);
+function randocolor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  }
+  cleanUp();
+  document.body.style.backgroundColor = randocolor();
+ }
+    </script>
+  </body>
