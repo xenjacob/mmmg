@@ -86,13 +86,22 @@ function parseFile(file){
 
 function displayGrindInfo() {
   document.getElementById('grindinfo').innerHTML = 
-  "<p>" + midiMeat.events.length + " temporally distinct events detected.</p>" + 
-  JSON.stringify(midiMeat);
+  "<p>" + midiMeat.events.length + " temporally distinct events detected.</p>";
 }
 //let firstgrind = analmidi(wtc1);
  
 function keyevent2(e) {
-  grindOnce(midiMeat);
+  if(e.code == 'KeyS') {
+    regrind(midiMeat);
+  }
+  else {
+    if(e.code == 'KeyA') {
+      backwardGrind(midiMeat);
+    }
+    else {
+      grindOnce(midiMeat);
+    }
+  }
 }
 
 document.getElementById('selins').onchange =  function(e) { 

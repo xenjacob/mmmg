@@ -47,9 +47,11 @@ function grindOnce(grinderobj, lookahead = false) {
     if (item.type == "off") {
       let v = grinderobj.voices.findIndex((voice) =>
         voice.pitch == item.midi);
-      //console.log(v);
-      grinderobj.voices[v].cancel();
-      grinderobj.voices.splice(v, 1);
+        if( v > -1)
+        {
+          grinderobj.voices[v].cancel();
+          grinderobj.voices.splice(v, 1);
+        }
     }
   });
 
@@ -71,6 +73,62 @@ function grindOnce(grinderobj, lookahead = false) {
   if( !ons && i != 0) {
     grindOnce(grinderobj);
   }
+}
+
+function backwardGrind(grinderobj) {
+  // off the notes
+  grinderobj.events[i].payload.forEach((item, index) => {
+    if (item.type == "on") {
+      // don't go on yet!
+      return;
+    }
+    if (item.type == "off") {
+      let v = grinderobj.voices.findIndex((voice) =>
+        voice.pitch == item.midi);
+      if( v > -1)
+      {
+        grinderobj.voices[v].cancel();
+        grinderobj.voices.splice(v, 1);
+      }
+    }
+  });
+  i = lookBehind(grinderobj, i);
+  grindOnce(grinderobj);
+}
+
+function lookBehind(grinderobj, ig) {
+    ig--;
+    while( ig > 0)
+    {
+      ig--;
+      if( grinderobj.events[ig].payload.findIndex((item) =>
+        item.type == "on") > -1) {
+          return ig;
+        }
+    }
+    ig = grinderobj.events.length - 1;
+    return lookBehind(grinderobj, ig);
+}
+
+function regrind(grinderobj) {
+  // off the notes
+  grinderobj.events[i].payload.forEach((item, index) => {
+    if (item.type == "on") {
+      // don't go on yet!
+      return;
+    }
+    if (item.type == "off") {
+      let v = grinderobj.voices.findIndex((voice) =>
+        voice.pitch == item.midi);
+      if( v > -1)
+        {
+          grinderobj.voices[v].cancel();
+          grinderobj.voices.splice(v, 1);
+        }
+      }
+  });
+  i = (i-1) % grinderobj.events.length;
+  grindOnce(grinderobj);
 }
 
 // keyevent version 1
