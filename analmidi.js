@@ -27,20 +27,16 @@ function analmidi(midiobj) {
     // add noteOn msg to events
       place(grinderobj, {
         "type": "on",
-        "track": 0,
         "midi": note.midi,
         "velocity": note.velocity
       }, parseInt(note.ticks));
       // add noteOff msg to events
       place(grinderobj, {
         "type": "off",
-        "track": 0,
         "midi": note.midi
       }, parseInt(note.ticks) + parseInt(note.durationTicks));
-    })}
-  );
+    })});
   // sort events by timing to put everything in order
   grinderobj.events.sort((a,b) => a.time - b.time);
-  grinderobj.events.push({"end": true});
   return grinderobj;
 }

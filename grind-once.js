@@ -28,7 +28,7 @@ function playGamelanTone(lastEnv, nextFreq) {
 
 // triggers payload contents of currently queued event
 // stores held notes in grinderobj.voices
-// increments index (breaks at end)
+// increments index (loops to beginning)
 let i = 0;
 let lookahead = 30;
 let onned = false;
@@ -53,18 +53,22 @@ function grindOnce(grinderobj, lookahead = false) {
     }
   });
 
+  // increment and modulo
+  i = (i+1) % grinderobj.events.length;
+
   // is next one soon? then do it, whether or not onned
   // is one after that soon? then do it, etc.
   // look ahead
-  if( !lookahead ) { 
+  if( i != 0 && !lookahead ) { 
     while (
-      ((grinderobj.events[i + 1].time - grinderobj.events[i].time) < lookahead)){
+      ((grinderobj.events[i].time - grinderobj.events[i-1].time) < lookahead)){
         grindOnce(grinderobj, true);
 
     }
   }
-  i++;
-  if( !ons ) {
+
+  // this little bit here ensures that every keystroke triggers at least to the next note-on
+  if( !ons && i != 0) {
     grindOnce(grinderobj);
   }
 }
