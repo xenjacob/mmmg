@@ -23,7 +23,7 @@
 		<script src='https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js'></script>
     	<script type="text/javascript" 
     <script src="midi.js"></script>
-    <script src="grind-once.js"></script>
+    <script src="grindr.js"></script>
     <script src="analmidi.js"></script>
     <script src="example-jsons.js"></script>
     <script>
@@ -43,7 +43,7 @@
 
     document.getElementById('selinst').innerHTML = chooserIns(0)
 
-    let midiMeat;
+    let grinder;
 
     if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
 			document.querySelector("#FileDrop #Text").textContent = "Reading files not supported by this browser";
@@ -77,7 +77,7 @@ function parseFile(file){
   reader.onload = function(e){
     const midi = new Midi(e.target.result);
     currentMidi = midi;
-    midiMeat = analmidi(currentMidi);
+    grinder = new MightyMeatyMIDIGrindr(analmidi(currentMidi));
     displayGrindInfo();
     document.getElementById('grinder').src = "grinder2.png";
   }
@@ -86,38 +86,38 @@ function parseFile(file){
 
 function displayGrindInfo() {
   document.getElementById('grindinfo').innerHTML = 
-  "<p>" + midiMeat.events.length + " temporally distinct events detected.</p>";
+  "<p>" + grinder.meat.events.length + " temporally distinct events detected.</p>";
 }
 //let firstgrind = analmidi(wtc1);
  
 function keyevent2(e) {
   switch(e.code) {
   case 'KeyS': {
-    regrind(midiMeat);
+    grinder.regrind();
     break
   }
   case 'KeyA': {
-      backwardGrind(midiMeat);
+      grinder.backwardGrind();
       break;
     }
   case 'KeyW': {
-    arpeggiate(midiMeat);
+    grinder.arpeggiate();
     break;
   }
   case 'KeyE': {
-    allOff(midiMeat);
+    grinder.allOff();
     break;
   }
   case 'KeyQ': {
-    jumpAndGrind(midiMeat, 0);
+    grinder.jumpAndGrind(0);
     break;
   }
   case 'KeyZ': {
-    jumpAndGrind(midiMeat, Math.floor(Math.random()*midiMeat.events.length));
+    grinder.jumpAndGrind(Math.floor(Math.random()*grinder.meat.events.length));
     break;
   }
   default: {
-      grindOnce(midiMeat);
+      grinder.grindOnce();
     }
   }
 }

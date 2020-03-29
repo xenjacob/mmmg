@@ -123,7 +123,7 @@ class MightyMeatyMIDIGrindr
     jumpAndGrind(new_i) {
         this.allOff();
         this.i = new_i;
-        this.grindOnce(grinderobj);
+        this.grindOnce();
     }
 
     arpeggiate()
@@ -132,12 +132,12 @@ class MightyMeatyMIDIGrindr
         if(this.arp == -1)
         { 
             this.strands = [];
-            grinderobj.voices.forEach((item, index) => {
+            this.meat.voices.forEach((item, index) => {
                 this.strands.push(item.pitch);
             });
         }
         this.arp++;
-        //console.log(arp);
+        console.log(this.arp);
         // after arpeggiating thru all, replay full chord & reset pitch memory
         if(this.arp == this.strands.length)
         {
@@ -149,7 +149,7 @@ class MightyMeatyMIDIGrindr
         // turn off previous voice(s)
         this.allOff();
         // turn on current voice
-        this.meat.voices.push( NoteOn(this.strands[arp]));
+        this.meat.voices.push( NoteOn(this.strands[this.arp]));
     }
 
     allOff() 
