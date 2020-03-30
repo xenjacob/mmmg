@@ -1,8 +1,3 @@
-// midi.js
-// forked by xenjacob 7/21/2019 from
-// tone.js/midi (https://github.com/Tonejs/Midi)
-// ((c) 2016 Yotam Mann under MIT License)
-// to include pitchbend messages that make microtonality possible
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
 		module.exports = factory();
@@ -319,7 +314,7 @@ function parseTrack(data) {
           case 0x00:
             event.type = 'sequenceNumber'
             if (length !== 2) throw "Expected length for sequenceNumber event is 2, got " + length
-            event.number = stream.readUInt16()
+            event.number = p.readUInt16()
             return event
           case 0x01:
             event.type = 'text'
@@ -624,7 +619,7 @@ function writeHeader(w, header, numTracks) {
   if (header.timeDivision) {
     timeDivision = header.timeDivision
   } else if (header.ticksPerFrame && header.framesPerSecond) {
-    timeDivision = (-(header.framesPerSecond & 0xFF) << 8) | (ticksPerFrame & 0xFF)
+    timeDivision = (-(header.framesPerSecond & 0xFF) << 8) | (header.ticksPerFrame & 0xFF)
   } else if (header.ticksPerBeat) {
     timeDivision = header.ticksPerBeat & 0x7FFF
   }
@@ -966,6 +961,7 @@ module.exports = writeMidi
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * Return the index of the element at or before the given property
+ * @hidden
  */
 function search(array, value, prop) {
     if (prop === void 0) { prop = "ticks"; }
@@ -1008,6 +1004,7 @@ exports.search = search;
 /**
  * Does a binary search to insert the note
  * in the correct spot in the array
+ * @hidden
  */
 function insert(array, event, prop) {
     if (prop === void 0) { prop = "ticks"; }
@@ -1036,6 +1033,7 @@ exports.insert = insert;
 Object.defineProperty(exports, "__esModule", { value: true });
 /**
  * A map of values to control change names
+ * @hidden
  */
 exports.controlChangeNames = {
     1: "modulationWheel",
@@ -1052,7 +1050,10 @@ exports.controlChangeNames = {
     68: "legatoFootswitch",
     84: "portamentoControl",
 };
-// swap the keys and values
+/**
+ * swap the keys and values
+ * @hidden
+ */
 exports.controlChangeIds = Object.keys(exports.controlChangeNames).reduce(function (obj, key) {
     obj[exports.controlChangeNames[key]] = key;
     return obj;
@@ -1060,18 +1061,12 @@ exports.controlChangeIds = Object.keys(exports.controlChangeNames).reduce(functi
 var privateHeaderMap = new WeakMap();
 var privateCCNumberMap = new WeakMap();
 /**
- * @typedef ControlChangeEvent
- * @property {number} controllerType
- * @property {number=} value
- * @property {number=} absoluteTime
- */
-/**
  * Represents a control change event
  */
 var ControlChange = /** @class */ (function () {
     /**
-     * @param {ControlChangeEvent} event
-     * @param {Header} header
+     * @param event
+     * @param header
      */
     function ControlChange(event, header) {
         privateHeaderMap.set(this, header);
@@ -1082,7 +1077,6 @@ var ControlChange = /** @class */ (function () {
     Object.defineProperty(ControlChange.prototype, "number", {
         /**
          * The controller number
-         * @readonly
          */
         get: function () {
             return privateCCNumberMap.get(this);
@@ -1148,6 +1142,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var ControlChange_1 = __webpack_require__(/*! ./ControlChange */ "./src/ControlChange.ts");
 /**
  * Automatically creates an alias for named control values using Proxies
+ * @hidden
  */
 function createControlChanges() {
     return new Proxy({}, {
@@ -1186,11 +1181,20 @@ exports.createControlChanges = createControlChanges;
 
 "use strict";
 
+var __spreadArrays = (this && this.__spreadArrays) || function () {
+    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
+    for (var r = Array(s), k = 0, i = 0; i < il; i++)
+        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
+            r[k] = a[j];
+    return r;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 var midi_file_1 = __webpack_require__(/*! midi-file */ "./node_modules/midi-file/index.js");
 var Header_1 = __webpack_require__(/*! ./Header */ "./src/Header.ts");
-// tslint:disable-next-line: no-var-requires
-var flatten = __webpack_require__(/*! array-flatten */ "./node_modules/array-flatten/array-flatten.js");
+var array_flatten_1 = __importDefault(__webpack_require__(/*! array-flatten */ "./node_modules/array-flatten/array-flatten.js"));
 function encodeNote(note, channel) {
     return [{
             absoluteTime: note.ticks,
@@ -1210,7 +1214,7 @@ function encodeNote(note, channel) {
         }];
 }
 function encodeNotes(track) {
-    return flatten(track.notes.map(function (note) { return encodeNote(note, track.channel); }));
+    return array_flatten_1.default(track.notes.map(function (note) { return encodeNote(note, track.channel); }));
 }
 function encodeControlChange(cc, channel) {
     return {
@@ -1233,28 +1237,22 @@ function encodeControlChanges(track) {
     }
     return controlChanges;
 }
-/*
-function encodePitchbendChange(pb: PitchbendChange, channel: number): MidiPitchbendEvent {
+function encodePitchBend(pb, channel) {
     return {
         absoluteTime: pb.ticks,
-        channel,
+        channel: channel,
         deltaTime: 0,
         type: "pitchBend",
         value: pb.value,
     };
 }
-
-function encodePitchbendChanges(track: Track): MidiPitchbendEvent[] {
-    const pitchbendChanges: MidiPitchbendEvent[] = [];
-    for (let i = 0; i < 127; i++) {
-        if (track.pitchbendChanges.hasOwnProperty(i)) {
-            track.pitchbendChanges.forEach((pb: PitchbendChange) => {
-                pitchbendChanges.push(encodePitchbendChange(pb, track.channel));
-            });
-        }
-    }
-    return pitchbendChanges;
-}*/
+function encodePitchBends(track) {
+    var pitchBends = [];
+    track.pitchBends.forEach(function (pb) {
+        pitchBends.push(encodePitchBend(pb, track.channel));
+    });
+    return pitchBends;
+}
 function encodeInstrument(track) {
     return {
         absoluteTime: 0,
@@ -1325,8 +1323,8 @@ function encode(midi) {
             numTracks: midi.tracks.length + 1,
             ticksPerBeat: midi.header.ppq,
         },
-        tracks: [
-            [
+        tracks: __spreadArrays([
+            __spreadArrays([
                 // the name data
                 {
                     absoluteTime: 0,
@@ -1335,14 +1333,14 @@ function encode(midi) {
                     text: midi.header.name,
                     type: "trackName",
                 }
-            ].concat(midi.header.keySignatures.map(function (keySig) { return encodeKeySignature(keySig); }), midi.header.meta.map(function (e) { return encodeText(e); }), midi.header.tempos.map(function (tempo) { return encodeTempo(tempo); }), midi.header.timeSignatures.map(function (timeSig) { return encodeTimeSignature(timeSig); }))
-        ].concat(midi.tracks.map(function (track) {
-            return [
+            ], midi.header.keySignatures.map(function (keySig) { return encodeKeySignature(keySig); }), midi.header.meta.map(function (e) { return encodeText(e); }), midi.header.tempos.map(function (tempo) { return encodeTempo(tempo); }), midi.header.timeSignatures.map(function (timeSig) { return encodeTimeSignature(timeSig); }))
+        ], midi.tracks.map(function (track) {
+            return __spreadArrays([
                 // add the name
                 encodeTrackName(track.name),
                 // the instrument
                 encodeInstrument(track)
-            ].concat(encodeNotes(track), encodeControlChanges(track));
+            ], encodeNotes(track), encodeControlChanges(track), encodePitchBends(track));
         })),
     };
     // sort and set deltaTime of all of the tracks
@@ -1382,6 +1380,9 @@ exports.encode = encode;
 Object.defineProperty(exports, "__esModule", { value: true });
 var BinarySearch_1 = __webpack_require__(/*! ./BinarySearch */ "./src/BinarySearch.ts");
 var privatePPQMap = new WeakMap();
+/**
+ * @hidden
+ */
 exports.keySignatureKeys = ["Cb", "Gb", "Db", "Ab", "Eb", "Bb", "F", "C", "G", "D", "A", "E", "B", "F#", "C#"];
 /** The parsed midi file header */
 var Header = /** @class */ (function () {
@@ -1462,7 +1463,6 @@ var Header = /** @class */ (function () {
             var lastBPM = index > 0 ? _this.tempos[index - 1].bpm : _this.tempos[0].bpm;
             var beats = (event.ticks / _this.ppq) - lastEventBeats;
             var elapsedSeconds = (60 / lastBPM) * beats;
-            // @ts-ignore
             event.time = elapsedSeconds + currentTime;
             currentTime = event.time;
             lastEventBeats += beats;
@@ -1598,14 +1598,17 @@ exports.Header = Header;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var InstrumentMaps_1 = __webpack_require__(/*! ./InstrumentMaps */ "./src/InstrumentMaps.ts");
+/**
+ * @hidden
+ */
 var privateTrackMap = new WeakMap();
 /**
  * Describes the midi instrument of a track
  */
 var Instrument = /** @class */ (function () {
     /**
-     * @param {Array} [trackData]
-     * @param {Track} track
+     * @param trackData
+     * @param track
      */
     function Instrument(trackData, track) {
         /**
@@ -1627,7 +1630,7 @@ var Instrument = /** @class */ (function () {
          */
         get: function () {
             if (this.percussion) {
-                return InstrumentMaps_1.drumKitByPatchID[this.number];
+                return InstrumentMaps_1.DrumKitByPatchID[this.number];
             }
             else {
                 return InstrumentMaps_1.instrumentByPatchID[this.number];
@@ -1651,7 +1654,7 @@ var Instrument = /** @class */ (function () {
                 return "drums";
             }
             else {
-                return InstrumentMaps_1.instrumentFamilyByID[Math.floor(this.number / 8)];
+                return InstrumentMaps_1.InstrumentFamilyByID[Math.floor(this.number / 8)];
             }
         },
         enumerable: true,
@@ -1663,7 +1666,7 @@ var Instrument = /** @class */ (function () {
          */
         get: function () {
             var track = privateTrackMap.get(this);
-            return [9, 10].includes(track.channel);
+            return track.channel === 9;
         },
         enumerable: true,
         configurable: true
@@ -1831,7 +1834,7 @@ exports.instrumentByPatchID = [
     "applause",
     "gunshot",
 ];
-exports.instrumentFamilyByID = [
+exports.InstrumentFamilyByID = [
     "piano",
     "chromatic percussion",
     "organ",
@@ -1849,7 +1852,7 @@ exports.instrumentFamilyByID = [
     "percussive",
     "sound effects",
 ];
-exports.drumKitByPatchID = {
+exports.DrumKitByPatchID = {
     0: "standard kit",
     8: "room kit",
     16: "power kit",
@@ -1874,10 +1877,11 @@ exports.drumKitByPatchID = {
 "use strict";
 
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
         function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
@@ -1937,6 +1941,8 @@ var Midi = /** @class */ (function () {
                     event.absoluteTime = currentTicks;
                 });
             });
+            // ensure at most one instrument per track
+            midiData.tracks = splitTracks(midiData.tracks);
         }
         this.header = new Header_1.Header(midiData);
         this.tracks = [];
@@ -2058,6 +2064,48 @@ var Midi = /** @class */ (function () {
     return Midi;
 }());
 exports.Midi = Midi;
+/**
+ * Given a list of MIDI tracks, make sure that each channel corresponds to at
+ * most one channel and at most one instrument. This means splitting up tracks
+ * that contain more than one channel or instrument.
+ */
+function splitTracks(tracks) {
+    var newTracks = [];
+    for (var i = 0; i < tracks.length; i++) {
+        var defaultTrack = newTracks.length;
+        // a map from [program, channel] tuples to new track numbers
+        var trackMap = new Map();
+        // a map from channel numbers to current program numbers
+        var currentProgram = Array(16).fill(0);
+        for (var _i = 0, _a = tracks[i]; _i < _a.length; _i++) {
+            var event_1 = _a[_i];
+            var targetTrack = defaultTrack;
+            // If the event has a channel, we need to find that channel's current
+            // program number and the appropriate track for this [program, channel]
+            // pair.
+            var channel = event_1.channel;
+            if (channel !== undefined) {
+                if (event_1.type === "programChange") {
+                    currentProgram[channel] = event_1.programNumber;
+                }
+                var program = currentProgram[channel];
+                var trackKey = program + " " + channel;
+                if (trackMap.has(trackKey)) {
+                    targetTrack = trackMap.get(trackKey);
+                }
+                else {
+                    targetTrack = defaultTrack + trackMap.size;
+                    trackMap.set(trackKey, targetTrack);
+                }
+            }
+            if (!newTracks[targetTrack]) {
+                newTracks.push([]);
+            }
+            newTracks[targetTrack].push(event_1);
+        }
+    }
+    return newTracks;
+}
 
 
 /***/ }),
@@ -2102,13 +2150,13 @@ var pitchToMidi = (function () {
     var regexp = /^([a-g]{1}(?:b|#|x|bb)?)(-?[0-9]+)/i;
     var noteToScaleIndex = {
         // tslint:disable-next-line: object-literal-sort-keys
-        "cbb": -2, "cb": -1, "c": 0, "c#": 1, "cx": 2,
-        "dbb": 0, "db": 1, "d": 2, "d#": 3, "dx": 4,
-        "ebb": 2, "eb": 3, "e": 4, "e#": 5, "ex": 6,
-        "fbb": 3, "fb": 4, "f": 5, "f#": 6, "fx": 7,
-        "gbb": 5, "gb": 6, "g": 7, "g#": 8, "gx": 9,
-        "abb": 7, "ab": 8, "a": 9, "a#": 10, "ax": 11,
-        "bbb": 9, "bb": 10, "b": 11, "b#": 12, "bx": 13,
+        cbb: -2, cb: -1, c: 0, "c#": 1, cx: 2,
+        dbb: 0, db: 1, d: 2, "d#": 3, dx: 4,
+        ebb: 2, eb: 3, e: 4, "e#": 5, ex: 6,
+        fbb: 3, fb: 4, f: 5, "f#": 6, fx: 7,
+        gbb: 5, gb: 6, g: 7, "g#": 8, gx: 9,
+        abb: 7, ab: 8, a: 9, "a#": 10, ax: 11,
+        bbb: 9, bb: 10, b: 11, "b#": 12, bx: 13,
     };
     return function (note) {
         var split = regexp.exec(note);
@@ -2125,6 +2173,7 @@ var privateHeaderMap = new WeakMap();
 var Note = /** @class */ (function () {
     function Note(noteOn, noteOff, header) {
         privateHeaderMap.set(this, header);
+        this.channel = noteOn.channel;
         this.midi = noteOn.midi;
         this.velocity = noteOn.velocity;
         this.noteOffVelocity = noteOff.velocity;
@@ -2219,6 +2268,7 @@ var Note = /** @class */ (function () {
         return {
             duration: this.duration,
             durationTicks: this.durationTicks,
+            channel: this.channel,
             midi: this.midi,
             name: this.name,
             ticks: this.ticks,
@@ -2233,10 +2283,10 @@ exports.Note = Note;
 
 /***/ }),
 
-/***/ "./src/PitchbendChange.ts":
-/*!********************************!*\
-  !*** ./src/PitchbendChange.ts ***!
-  \********************************/
+/***/ "./src/PitchBend.ts":
+/*!**************************!*\
+  !*** ./src/PitchBend.ts ***!
+  \**************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2244,31 +2294,21 @@ exports.Note = Note;
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var privateHeaderMap = new WeakMap();
-// convert [-8191,8191]] to [-2,2]
-function PitchbendMIDItoFloat(pb_14bit) {
-    return pb_14bit / 8191.0 * 2.0;
-}
-exports.PitchbendMIDItoFloat = PitchbendMIDItoFloat;
-/**)
- * @typedef PitchbendChangeEvent
- * @property {number=} value
- * @property {number=} absoluteTime
- */
 /**
- * Represents a pitch bend change event
+ * Represents a pitch bend event
  */
-var PitchbendChange = /** @class */ (function () {
+var PitchBend = /** @class */ (function () {
     /**
-     * @param {PitchbendChangeEvent} event
-     * @param {Header} header
+     * @param event
+     * @param header
      */
-    function PitchbendChange(event, header) {
+    function PitchBend(event, header) {
         privateHeaderMap.set(this, header);
         this.ticks = event.absoluteTime;
         this.value = event.value;
-        this.semitones = PitchbendMIDItoFloat(event.value);
+        this.channel = event.channel;
     }
-    Object.defineProperty(PitchbendChange.prototype, "time", {
+    Object.defineProperty(PitchBend.prototype, "time", {
         /**
          * The time of the event in seconds
          */
@@ -2283,18 +2323,17 @@ var PitchbendChange = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    PitchbendChange.prototype.toJSON = function () {
+    PitchBend.prototype.toJSON = function () {
         return {
-            channel: this.channel,
             ticks: this.ticks,
             time: this.time,
             value: this.value,
-            semitones: this.semitones
+            channel: this.channel
         };
     };
-    return PitchbendChange;
+    return PitchBend;
 }());
-exports.PitchbendChange = PitchbendChange;
+exports.PitchBend = PitchBend;
 
 
 /***/ }),
@@ -2312,9 +2351,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var BinarySearch_1 = __webpack_require__(/*! ./BinarySearch */ "./src/BinarySearch.ts");
 var ControlChange_1 = __webpack_require__(/*! ./ControlChange */ "./src/ControlChange.ts");
 var ControlChanges_1 = __webpack_require__(/*! ./ControlChanges */ "./src/ControlChanges.ts");
+var PitchBend_1 = __webpack_require__(/*! ./PitchBend */ "./src/PitchBend.ts");
 var Instrument_1 = __webpack_require__(/*! ./Instrument */ "./src/Instrument.ts");
 var Note_1 = __webpack_require__(/*! ./Note */ "./src/Note.ts");
-var PitchbendChange_1 = __webpack_require__(/*! ./PitchbendChange */ "./src/PitchbendChange.ts");
 var privateHeaderMap = new WeakMap();
 /**
  * A Track is a collection of notes and controlChanges
@@ -2338,25 +2377,32 @@ var Track = /** @class */ (function () {
          * The control change events
          */
         this.controlChanges = ControlChanges_1.createControlChanges();
+        /**
+         * The pitch bend events
+         */
+        this.pitchBends = [];
         privateHeaderMap.set(this, header);
         if (trackData) {
             var nameEvent = trackData.find(function (e) { return e.type === "trackName"; });
             this.name = nameEvent ? nameEvent.text : "";
         }
-        /** @type {Instrument} */
         this.instrument = new Instrument_1.Instrument(trackData, this);
+        // defaults to 0
         this.channel = 0;
         if (trackData) {
             var noteOns = trackData.filter(function (event) { return event.type === "noteOn"; });
             var noteOffs = trackData.filter(function (event) { return event.type === "noteOff"; });
             var _loop_1 = function () {
                 var currentNote = noteOns.shift();
+                // set the channel based on the note
+                this_1.channel = currentNote.channel;
                 // find the corresponding note off
-                var offIndex = noteOffs.findIndex(function (note) { return note.noteNumber === currentNote.noteNumber; });
+                var offIndex = noteOffs.findIndex(function (note) { return note.noteNumber === currentNote.noteNumber && note.absoluteTime >= currentNote.absoluteTime; });
                 if (offIndex !== -1) {
                     // once it's got the note off, add it
                     var noteOff = noteOffs.splice(offIndex, 1)[0];
                     this_1.addNote({
+                        channel: currentNote.channel,
                         durationTicks: noteOff.absoluteTime - currentNote.absoluteTime,
                         midi: currentNote.noteNumber,
                         noteOffVelocity: noteOff.velocity / 127,
@@ -2377,9 +2423,14 @@ var Track = /** @class */ (function () {
                     value: event.value / 127,
                 });
             });
-            var pitchbendChanges = trackData.filter(function (event) { return event.type === "pitchBend"; });
-            pitchbendChanges.forEach(function (event) {
-                _this.addPitchbend(event);
+            var pitchBends = trackData.filter(function (event) { return event.type === "pitchBend"; });
+            pitchBends.forEach(function (event) {
+                _this.addPitchbend({
+                    ticks: event.absoluteTime,
+                    // scale the value between -2^13 to 2^13 to -2 to 2
+                    value: event.value / Math.pow(2, 13),
+                    channel: event.channel,
+                });
             });
             // const endOfTrack = trackData.find(event => event.type === "endOfTrack");
         }
@@ -2389,15 +2440,16 @@ var Track = /** @class */ (function () {
      * @param props The note properties to add
      */
     Track.prototype.addNote = function (props) {
-        if (props === void 0) { props = {}; }
         var header = privateHeaderMap.get(this);
         var note = new Note_1.Note({
             midi: 0,
             ticks: 0,
             velocity: 1,
+            channel: 0,
         }, {
             ticks: 0,
             velocity: 0,
+            channel: 0,
         }, header);
         Object.assign(note, props);
         BinarySearch_1.insert(this.notes, note, "ticks");
@@ -2421,14 +2473,13 @@ var Track = /** @class */ (function () {
         return this;
     };
     /**
-     * Add a pitchbend to the pitchbendchanges array
+     * Add a pitchbend to the pitchbends array
      * @param props The pitchbend properties to add
      */
     Track.prototype.addPitchbend = function (props) {
         if (props === void 0) { props = {}; }
-        console.log('adding PB attempt!');
         var header = privateHeaderMap.get(this);
-        var pb = new PitchbendChange_1.PitchbendChange(props, header);
+        var pb = new PitchBend_1.PitchBend(props, header);
         Object.assign(pb, props);
         BinarySearch_1.insert(this.pitchbends, pb, "ticks");
         return this;
@@ -2491,15 +2542,15 @@ var Track = /** @class */ (function () {
                 midi: n.midi,
                 ticks: n.ticks,
                 velocity: n.velocity,
+                channel: n.channel
             });
         });
-        json.pitchbends.forEach(function (pb) {
+        json.pitchBends.forEach(function (pb) {
             _this.addPitchbend({
                 ticks: pb.ticks,
                 value: pb.value,
                 time: pb.time,
                 channel: pb.channel,
-                semitones: pb.semitones
             });
         });
     };
@@ -2520,7 +2571,7 @@ var Track = /** @class */ (function () {
             instrument: this.instrument.toJSON(),
             name: this.name,
             notes: this.notes.map(function (n) { return n.toJSON(); }),
-            pitchbends: this.pitchbends.map(function (n) { return n.toJSON(); })
+            pitchBends: this.pitchbends.map(function (n) { return n.toJSON(); })
         };
     };
     return Track;
