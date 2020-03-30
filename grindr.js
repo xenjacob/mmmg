@@ -137,7 +137,6 @@ class MightyMeatyMIDIGrindr
             });
         }
         this.arp++;
-        console.log(this.arp);
         // after arpeggiating thru all, replay full chord & reset pitch memory
         if(this.arp == this.strands.length)
         {
