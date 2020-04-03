@@ -17,7 +17,7 @@
 		</div>
     <div id="grindinfo"></div>
     <div id="selinst"></div></div>
-    <img id="grinder" src="grinder0.png">
+    <img id="grinder" src="img/grinder0.png">
     <button id="beginbtn" onmousedown="begingrind()" style="width: 100%"><center>Begin grind</center></button>
     <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
     <script src="midi.js"></script>
@@ -78,7 +78,7 @@
         currentMidi = midi;
         grinder = new MightyMeatyMIDIGrindr(analmidi(currentMidi));
         displayGrindInfo();
-        document.getElementById('grinder').src = "grinder2.png";
+        document.getElementById('grinder').src = "img/grinder2.png";
       }
       reader.readAsArrayBuffer(file)			
     }		
