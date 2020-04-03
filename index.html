@@ -11,17 +11,15 @@
     <p><a href="about.html">about</a></p>
 		<div id="FileDrop">
 			<div id="Text">
-				Drop a midi file here
+				Drop a midi file here, or click for dialog
 			</div>
 			<input type="file" accept="audio/midi">
 		</div>
     <div id="grindinfo"></div>
-    <div id="selinst" hidden></div></div>
+    <div id="selinst"></div></div>
     <img id="grinder" src="grinder0.png">
     <button id="beginbtn" onmousedown="begingrind()" style="width: 100%"><center>Begin grind</center></button>
     <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
-		<script src='https://surikov.github.io/webaudiofontdata/sound/0000_JCLive_sf2_file.js'></script>
-    	<script type="text/javascript" 
     <script src="midi.js"></script>
     <script src="grindr.js"></script>
     <script src="analmidi.js"></script>
@@ -69,83 +67,94 @@
 			})
     }
 
-let currentMidi = null
+    let currentMidi = null;
+    let insti = 0;
 
-function parseFile(file){
-  //read the file
-  const reader = new FileReader()
-  reader.onload = function(e){
-    const midi = new Midi(e.target.result);
-    currentMidi = midi;
-    grinder = new MightyMeatyMIDIGrindr(analmidi(currentMidi));
-    displayGrindInfo();
-    document.getElementById('grinder').src = "grinder2.png";
-  }
-  reader.readAsArrayBuffer(file)			
-}		
+    function parseFile(file){
+      //read the file
+      const reader = new FileReader()
+      reader.onload = function(e){
+        const midi = new Midi(e.target.result);
+        currentMidi = midi;
+        grinder = new MightyMeatyMIDIGrindr(analmidi(currentMidi));
+        displayGrindInfo();
+        document.getElementById('grinder').src = "grinder2.png";
+      }
+      reader.readAsArrayBuffer(file)			
+    }		
 
-function displayGrindInfo() {
-  document.getElementById('grindinfo').innerHTML = 
-  "<p>" + grinder.meat.events.length + " temporally distinct events detected.</p>";
-}
-//let firstgrind = analmidi(wtc1);
- 
-function keyevent2(e) {
-  switch(e.code) {
-  case 'KeyS': {
-    grinder.regrind();
-    break
-  }
-  case 'KeyA': {
-      grinder.backwardGrind();
-      break;
+    function displayGrindInfo() {
+      document.getElementById('grindinfo').innerHTML = 
+      "<p>" + grinder.meat.events.length + " temporally distinct events detected.</p>";
     }
-  case 'KeyW': {
-    grinder.arpeggiate();
-    break;
-  }
-  case 'KeyE': {
-    grinder.allOff();
-    break;
-  }
-  case 'KeyQ': {
-    grinder.jumpAndGrind(0);
-    break;
-  }
-  case 'KeyZ': {
-    grinder.jumpAndGrind(Math.floor(Math.random()*grinder.meat.events.length));
-    break;
-  }
-  default: {
-      grinder.grindOnce();
+    //let firstgrind = analmidi(wtc1);
+    
+    function keyevent2(e) {
+      switch(e.code) {
+      case 'KeyS': {
+        grinder.regrind();
+        break
+      }
+      case 'KeyA': {
+          grinder.backwardGrind();
+          break;
+        }
+      case 'KeyW': {
+        grinder.arpeggiate();
+        break;
+      }
+      case 'KeyE': {
+        grinder.allOff();
+        break;
+      }
+      case 'KeyQ': {
+        grinder.jumpAndGrind(0);
+        break;
+      }
+      case 'KeyZ': {
+        grinder.jumpAndGrind(Math.floor(Math.random()*grinder.meat.events.length));
+        break;
+      }
+      default: {
+          grinder.grindOnce();
+        }
+      }
     }
-  }
-}
 
-document.getElementById('selins').onchange =  function(e) { 
-  insti = document.getElementById('selins').selectedIndex;
-  presetname = player.loader.instrumentKeys()[insti];
-  player.loader.decodeAfterLoading(audioContext, presetname)
-  currentinst = window[presetname];
-  console.log(currentinst);
-};
+    // on change item, change insti to program number & dynamically load file?
+    document.getElementById('selins').onchange =  function(e) { 
+      insti = document.getElementById('selins').selectedIndex;
+      presetname = "_tone_" + player.loader.instrumentKeys()[insti];
+    };
 
-function cleanUp() {
-  document.getElementById('beginbtn').style.display = "none";
-  document.getElementById('upper').style.display = "none";
-}
-function begingrind() {
-document.addEventListener('keydown',keyevent2);
-function randocolor() {
-    var letters = '0123456789ABCDEF';
-    var color = '#';
-    for (var i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
+    function loadInstrument() {
+      let audiofontscript = document.createElement("script");
+      audiofontscript.src = player.loader.instrumentInfo(insti).url;
+      document.body.appendChild(audiofontscript);
     }
-    return color;
-  }
-  cleanUp();
-  document.body.style.backgroundColor = randocolor();
- }
+
+    function cleanUp() {
+      document.getElementById('beginbtn').style.display = "none";
+      document.getElementById('upper').style.display = "none";
+    }
+
+    function randocolor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+
+    function begingrind() {
+      loadInstrument();
+      // decode last loaded audio font (dynamic script load with callback fuction)
+      player.loader.decodeAfterLoading(audioContext, presetname);
+      // grind it
+      document.addEventListener('keydown',keyevent2);
+      cleanUp(); 
+      document.body.style.backgroundColor = randocolor();
+      }
     </script>
   </body>
