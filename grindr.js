@@ -4,13 +4,15 @@
 var AudioContextFunc = window.AudioContext || window.webkitAudioContext;
 var audioContext = new AudioContextFunc();
 var player = new WebAudioFontPlayer();
-// hard-coded piano for now
-let presetname = '_tone_0000_JCLive_sf2_file';
-player.loader.decodeAfterLoading(audioContext, presetname);
+let presetname;
+// hard-coded reed organ. - overrode in
+//let presetname = '_tone_0200_GeneralUserGS_sf2_file';
+//player.loader.decodeAfterLoading(audioContext, presetname);
+
 function NoteOn(pitch, amplitude = 0.2, dur = 999)
 {
     return player.queueWaveTable(audioContext,
-    audioContext.destination, _tone_0000_JCLive_sf2_file, 0,
+    audioContext.destination, window[presetname], 0,
     // pitch, max duration, amplitude
     pitch, dur, amplitude);
 }

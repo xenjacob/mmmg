@@ -1,7 +1,23 @@
 <DOCTYPE html>
-  <head><title>MIDI Grinder - About</title></head>
+  <head><title>MIDI Grinder - About</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
   <body>
-    <p>By stripping away exact timing information, the <a href="https://The-Mighty-Meaty-MIDI-Grinder--xenjacob.repl.co">Mighty Meaty MIDI Grinder</a> turns any MIDI file back into a challenge of human performance. Once the file has processed, hit the button at the bottom to start. Grind away by mashing any keyboard key.<p>
-<p>Each event triggers the next note or chord, kind of like advancing a musical slideshow. With the challenge of hitting the <i>right</i> keys removed, can you deliver a </>musical</i> performance?</p>
-<p><a href="https://www.youtube.com/watch?v=IQkggHPDqT4">Demo video</a>
-<p>Credits to <a href="https://github.com/Tonejs/Midi">Tonejs/Midi</a> and <a href="https://github.com/surikov/webaudiofont/">webaudiofont</a> (under MIT license). Grinder image adapted from user Pknpspb contribution on kissclipart.com.</p>
+    <p>By stripping away exact timing information, the <a href="https://xenjacob.github.io/mmmg">Mighty Meaty MIDI Grinder</a> turns any MIDI file back into a challenge of human performance. Once the file has processed, hit the button at the bottom to start. Grind away by mashing any keyboard key.<p>
+<p>Each event triggers the next note or chord, kind of like advancing a musical slideshow. With the challenge of hitting the <i>right</i> keys removed, can you deliver a <i>musical</i> performance?</p>
+<hr />
+<p>version histry</p>
+<p>v0.5 - timbre switching (from 1000+ pre-formatted GM soundfonts in <a href="https://surikov.github.io/webaudiofont/#catalog-of-instruments" target="_blank">webaudiofont catalog</a>).
+<p>v0.4 - channel pitchbends apply to notes they are synchronized with. microtonal playback implemented, tested on moljare scala-tuned midis.</p>
+<p>v0.3 - grinder data & functions encapsulated in MightyMeatyMIDIGrindr class.
+<p>v0.2 - Bonus controls (*unpredictable):</p>
+<ul><li>A - grind backwards*</li>
+  <li>S - regrind same chord or note</li>
+  <li>E - all notes off*</li>
+  <li>W - arpeggiate*</li>
+  <li>Q - jump back to beginning of sequence</li>
+  <li>Z - jump to random spot in sequence</li>
+  <li>any other key - grind once (cue next synchronous event)</li></ul>
+  <p>v0.1 for repl.it's July 2019 music-themed code jam. <a href="https://www.youtube.com/watch?v=IQkggHPDqT4">demo video</a></p>
+  <hr />
+<p>Credits to <a href="https://github.com/Tonejs/Midi">Tonejs/Midi</a> and <a href="https://github.com/surikov/webaudiofont/">webaudiofont</a> (under MIT license). Grinder image adapted from user Pknpspb contribution on kissclipart.com. Thanks to crownbraid for mentorship; &amp; TESIII for model clienting &amp; seed funding.</p>

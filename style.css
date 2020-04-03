@@ -75,3 +75,7 @@ img {
 			margin: 10px auto;
 			font-family: sans-serif;
 		}
+
+		ul {
+			list-style: none;
+		}
