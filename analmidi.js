@@ -4,15 +4,22 @@
 // they exist, otherwise schedule new event
 // modifies grinderobj
 function place(grinderobj, newevent, time) {
-  let found = grinderobj['events'].findIndex( (event) =>
+  if(time ==0) { console.log("zero");}
+  let found = grinderobj.events.findIndex( (event) =>
     event.time == time);
   if( found < 0) {
-    grinderobj['events'].push({
+    grinderobj.events.push({
       "time": time,
-      "payload": [newevent]
+      "ons": [],
+      "offs": [],
+      "pitchbends": []
     });
-  } else {
-    grinderobj['events'][found].payload.push(newevent);
+    found = grinderobj.events.length - 1;
+  };
+  switch( newevent.type) {
+    case "on": { grinderobj.events[found].ons.push(newevent); break; }
+    case "off": { grinderobj.events[found].offs.push(newevent); break; }
+    case "pitchbend": { grinderobj.events[found].pitchbends.push(newevent); }
   }
 }
 
@@ -51,6 +58,7 @@ function analmidi(midiobj) {
   grinderobj.events.sort((a,b) => a.time - b.time);
   // do the tuning-math with simultaneous pitchbend-noteons
   applyBends(grinderobj.events);
+  console.log(grinderobj);
   return grinderobj;
 }
 
@@ -63,14 +71,12 @@ function applyBends(eventses) {
   // iterate
   eventses.forEach(events => {
     // pull pitchbends to the front of event groups
-    events.payload.sort( (a,b) => 
-      (a.type == "pitchbend" ? 0 : 1 ) + (b.type == "pitchbend" ? 0 : -1));
     // apply pitchbends to tracks 
-    events.payload.forEach((item, index) => {
-      switch(item.type) {
-        case "pitchbend": channelbends[item.channel] = item.semitones; break;
-        default: item.midi = item.midi + channelbends[item.channel]*2; 
-      }
-    });
+    events.offs.forEach((item, index) => 
+      item.midi = item.midi + channelbends[item.channel]*2);
+    events.pitchbends.forEach((item, index) => 
+      channelbends[item.channel] = item.semitones);
+    events.ons.forEach((item, index) =>
+      item.midi = item.midi + channelbends[item.channel]*2);
   });
 }
