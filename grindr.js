@@ -34,59 +34,55 @@ class MightyMeatyMIDIGrindr
 
     grindOnce(lookahead = false)
     {
-        // trigger payload contents of currently queued event
-        let ons = 0;
-        this.meat.events[this.i].payload.forEach((item, index) =>
-        {
-            if (item.type == "on")
+        console.log(this.meat.events[this.i]);
+        // trigger currently queued event
+        this.meat.events[this.i].ons.forEach((item) =>
+            this.meat.voices.push(NoteOn(item.midi)));
+        this.meat.events[this.i].offs.forEach((item) => {
+            let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
+            if( v > -1)
             {
-                ons++;
-                this.meat.voices.push(NoteOn(item.midi));
-            }
-            if (item.type == "off")
-            {
-                let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
-                if( v > -1)
-                {
-                    this.meat.voices[v].cancel();
-                    this.meat.voices.splice(v, 1);
-                }
+                this.meat.voices[v].cancel();
+                this.meat.voices.splice(v, 1);
             }
         });
 
         // increment and modulo
         this.i = (this.i+1) % this.meat.events.length;
 
+        // if there were no note ons or offs, grind to next.
+        if( !this.meat.events[this.i].ons.length &&
+            !this.meat.events[this.i].offs.length) {
+                this.grindOnce();
+            }
+
         // is next one soon? then do it, whether or not onned
         // is one after that soon? then do it, etc.
         // look ahead
-        if( this.i != 0 && !lookahead ) { 
+        // disabled/broken for stop thinking edition.
+        /*if( this.i != 0 && !lookahead ) { 
             while (((this.meat.events[this.i].time - this.meat.events[this.i-1].time) < lookahead))
             {
                 this.grindOnce(true);
             }
-        }
+        }*/
 
         // ensures that every keystroke triggers at least to the next note-on
-        if( !ons && this.i != 0) {
+        // --disabled for stop thinking edition--
+        /*if( !ons && this.i != 0) {
             this.grindOnce();
-        }
+        }*/
     }
 
     // helper function for backwardGrind and 
     nextNoteOffs() {
-        this.meat.events[this.i].payload.forEach((item, index) =>
+        this.meat.events[this.i].offs.forEach((item, index) =>
         {
-            if (item.type == "on") {
-                return;
-            }
-            if (item.type == "off") {
-                let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
-                if( v > -1)
-                {
-                    this.meat.voices[v].cancel();
-                    this.meat.voices.splice(v, 1);
-                }
+            let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
+            if( v > -1)
+            {
+                this.meat.voices[v].cancel();
+                this.meat.voices.splice(v, 1);
             }
         });
     }
