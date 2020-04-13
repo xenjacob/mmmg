@@ -68,9 +68,10 @@ class MightyMeatyMIDIGrindr
         }
 
         // ensures that every keystroke triggers at least to the next note-on
-        if( !ons && this.i != 0) {
+        // --disabled for stop thinking edition--
+        /*if( !ons && this.i != 0) {
             this.grindOnce();
-        }
+        }*/
     }
 
     // helper function for backwardGrind and 
