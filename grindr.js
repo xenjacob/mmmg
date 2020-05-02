@@ -9,7 +9,7 @@ let presetname;
 //let presetname = '_tone_0200_GeneralUserGS_sf2_file';
 //player.loader.decodeAfterLoading(audioContext, presetname);
 
-function NoteOn(pitch, amplitude = 0.2, dur = 999)
+function NoteOn(pitch, amplitude, dur = 999)
 {
     return player.queueWaveTable(audioContext,
     audioContext.destination, window[presetname], 0,
@@ -19,7 +19,7 @@ function NoteOn(pitch, amplitude = 0.2, dur = 999)
 
 class MightyMeatyMIDIGrindr 
 {
-    constructor(meat)
+    constructor(meat, options = { forceOns: true})
     {
         // meat holds the MIDI events
         this.meat = meat;
@@ -30,21 +30,31 @@ class MightyMeatyMIDIGrindr
         // arpeggiation fgeature
         this.arp = -1;
         this.strands = [];
+
+        // grind options
+        this.options = options;
+    }
+
+    // update options
+    updateOptions( opts ) {
+        this.options = opts;
     }
 
     grindOnce(lookahead = false)
     {
         // trigger payload contents of currently queued event
-        let ons = 0;
+        let ons = 0, offs = 0;
         this.meat.events[this.i].payload.forEach((item, index) =>
         {
+            console.log(item);
             if (item.type == "on")
             {
                 ons++;
-                this.meat.voices.push(NoteOn(item.midi));
+                this.meat.voices.push(NoteOn(item.midi, item.velocity/5.0));
             }
             if (item.type == "off")
             {
+                offs++;
                 let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
                 if( v > -1)
                 {
@@ -57,19 +67,19 @@ class MightyMeatyMIDIGrindr
         // increment and modulo
         this.i = (this.i+1) % this.meat.events.length;
 
-        // is next one soon? then do it, whether or not onned
-        // is one after that soon? then do it, etc.
-        // look ahead
-        if( this.i != 0 && !lookahead ) { 
-            while (((this.meat.events[this.i].time - this.meat.events[this.i-1].time) < lookahead))
+        // will not grind again if looped back to beginning
+        if( this.i != 0) {
+            // will grind again if no ons or offs have occurred
+            if(!(offs || ons))
             {
-                this.grindOnce(true);
+                this.grindOnce();
             }
-        }
-
-        // ensures that every keystroke triggers at least to the next note-on
-        if( !ons && this.i != 0) {
-            this.grindOnce();
+            else {
+                // will grind again if forceOns option and no ons have occurred
+                if( this.options.forceOns && !ons) {
+                    this.grindOnce();
+                }
+            }
         }
     }
 

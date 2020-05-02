@@ -16,7 +16,9 @@
 			<input type="file" accept="audio/midi">
 		</div>
     <div id="grindinfo"></div>
-    <div id="selinst"></div></div>
+    <div id="selinst"></div>
+    <input type="checkbox" id="forceOnsOption" checked><label for="forceOnsOption">Force grind to next note-on</label>
+    </div>
     <img id="grinder" src="img/grinder0.png">
     <button id="beginbtn" onmousedown="begingrind()" style="width: 100%"><center>Begin grind</center></button>
     <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
@@ -121,7 +123,7 @@
       }
     }
 
-    // on change item, change insti to program number & dynamically load file?
+    // on change item, change insti to program number
     let selectInst =  function(e) { 
       insti = document.getElementById('selins').selectedIndex;
       presetname = "_tone_" + player.loader.instrumentKeys()[insti];
@@ -150,7 +152,12 @@
         return color;
     }
 
+    function loadOptions() {
+      grinder.updateOptions( { forceOns: document.getElementById("forceOnsOption").checked });
+    }
+
     function begingrind() {
+      loadOptions();
       loadInstrument();
       // decode last loaded audio font (dynamic script load with callback fuction)
       player.loader.decodeAfterLoading(audioContext, presetname);
