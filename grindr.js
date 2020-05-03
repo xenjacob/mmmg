@@ -96,6 +96,7 @@ class MightyMeatyMIDIGrindr
     }
     
     // helper function for backwardGrind
+    // still broken.
     lookBehind(ig)
     {
         ig--;

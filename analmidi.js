@@ -4,7 +4,6 @@
 // they exist, otherwise schedule new event
 // modifies grinderobj
 function place(grinderobj, newevent, time) {
-  if(time ==0) { console.log("zero");}
   let found = grinderobj.events.findIndex( (event) =>
     event.time == time);
   if( found < 0) {
@@ -58,7 +57,7 @@ function analmidi(midiobj) {
   grinderobj.events.sort((a,b) => a.time - b.time);
   // do the tuning-math with simultaneous pitchbend-noteons
   applyBends(grinderobj.events);
-  console.log(grinderobj);
+  //console.log(grinderobj);
   return grinderobj;
 }
 
