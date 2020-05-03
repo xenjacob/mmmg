@@ -85,13 +85,18 @@ class MightyMeatyMIDIGrindr
 
     // helper function for backwardGrind and 
     nextNoteOffs() {
-        this.meat.events[this.i].offs.forEach((item, index) =>
+        this.meat.events[this.i].payload.forEach((item, index) =>
         {
-            let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
-            if( v > -1)
-            {
-                this.meat.voices[v].cancel();
-                this.meat.voices.splice(v, 1);
+            if (item.type == "on") {
+                return;
+            }
+            if (item.type == "off") {
+                let v = this.meat.voices.findIndex((voice) => voice.pitch == item.midi);
+                if( v > -1)
+                {
+                    this.meat.voices[v].cancel();
+                    this.meat.voices.splice(v, 1);
+                }
             }
         });
     }
