@@ -65,10 +65,6 @@ function applyBends(eventses) {
     // pull pitchbends to the front of event groups
     events.payload.sort( (a,b) => 
       (a.type == "pitchbend" ? 0 : 1 ) + (b.type == "pitchbend" ? 0 : -1));
-    // pull note-offs to the very front
-    // so that new pitchbends do not affect old note-offs
-    events.payload.sort( (a,b) => 
-    (a.type == "off" ? 0 : 1 ) + (b.type == "off" ? 0 : -1));
     // apply pitchbends to tracks 
     events.payload.forEach((item, index) => {
       switch(item.type) {
