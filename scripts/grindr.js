@@ -46,7 +46,6 @@ class MightyMeatyMIDIGrindr
         let ons = 0, offs = 0;
         this.meat.events[this.i].payload.forEach((item, index) =>
         {
-            console.log(item);
             if (item.type == "on")
             {
                 ons++;

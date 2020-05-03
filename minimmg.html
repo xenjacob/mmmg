@@ -1,14 +1,14 @@
 <DOCTYPE html>
 
 	<head>
-		<title>MightyMeatyMIDIGrindr</title>
+		<title>The Mini Meaty MIDI Grinder</title>
 		<link rel="stylesheet" href="style.css">
 	</head>
 
 	<body>
     <div id="upper">
-		<h1>The Mighty Meaty MIDI Grinder: An Aural Animation Tool</h1>
-    <p><a href="about.html">about</a></p>
+        <h1>The MINI Mighty Meaty MIDI Grinder: An Aural Animation Tool</h1>
+        <p><a href="about.html">about</a></p>
 		<div id="FileDrop">
 			<div id="Text">
 				Drop a midi file here, or click for dialog
@@ -21,21 +21,29 @@
     </div>
     <img id="grinder" src="img/grinder0.png">
     <button id="beginbtn" onmousedown="begingrind()" style="width: 100%"><center>Begin grind</center></button>
-    <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
-    <script src="Midi.js"></script>
-    <script src="grindr.js"></script>
-    <script src="analmidi.js"></script>
-    <script src="example-jsons.js"></script>
+    <script src='scripts/WebAudioFontPlayer.js'></script>
+    <script src='scripts/Midi.js'></script>
+    <script src='scripts/piano_font.js'></script>
+    <script src='scripts/organ_font.js'></script>
+    <script src='scripts/grindr.js'></script>
+    <script src='scripts/analmidi.js'></script>
     <script>
 
+        // hardwired presets 8 & 209
+        let subset_choices = [8, 209];
+
       function chooserIns(n) {
-			var html = '<select id="selins">';
-			for (var i = 0; i < player.loader.instrumentKeys().length; i++) {
+            var html = '<select id="selins">';
+            let fullset = player.loader.instrumentKeys();
+            // hardwired presets 8 & 209 handpicked from full set
+            let subset = [fullset[8], fullset[209]];
+            
+			for (var i = 0; i < subset.length; i++) {
 				var sel = '';
 				if (i == n) {
 					sel = ' selected';
 				}
-				html = html + '<option value="' + i + '"' + sel + '>' + i + ': ' + player.loader.instrumentInfo(i).title + '</option>';
+				html = html + '<option value="' + subset_choices[i] + '"' + sel + '>' + i + ': ' + player.loader.instrumentInfo(subset_choices[i]).title + '</option>';
 			}
 			html = "Choose a soundfont: " + html + '</select>';
 			return html;
@@ -126,17 +134,12 @@
     // on change item, change insti to program number
     let selectInst =  function(e) { 
       insti = document.getElementById('selins').selectedIndex;
-      presetname = "_tone_" + player.loader.instrumentKeys()[insti];
+      presetname = "_tone_" + player.loader.instrumentKeys()[subset_choices[insti]];
+      console.log(presetname);
     };
 
     document.getElementById('selins').onchange = selectInst;
     selectInst(0);
-
-    function loadInstrument() {
-      let audiofontscript = document.createElement("script");
-      audiofontscript.src = player.loader.instrumentInfo(insti).url;
-      document.body.appendChild(audiofontscript);
-    }
 
     function cleanUp() {
       document.getElementById('beginbtn').style.display = "none";
@@ -158,9 +161,9 @@
 
     function begingrind() {
       loadOptions();
-      loadInstrument();
       // decode last loaded audio font (dynamic script load with callback fuction)
       player.loader.decodeAfterLoading(audioContext, presetname);
+      console.log("loadin");
       // grind it
       document.addEventListener('keydown',keyevent2);
       cleanUp(); 
