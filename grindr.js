@@ -30,9 +30,12 @@ class MightyMeatyMIDIGrindr
         // arpeggiation fgeature
         this.arp = -1;
         this.strands = [];
+
+        // lookahead 2 ticks
+        this.lookahead = 2;
     }
 
-    grindOnce(lookahead = false)
+    grindOnce(slave = false)
     {
         console.log(this.meat.events[this.i]);
         // trigger currently queued event
@@ -59,19 +62,12 @@ class MightyMeatyMIDIGrindr
         // is next one soon? then do it, whether or not onned
         // is one after that soon? then do it, etc.
         // look ahead
-        // disabled/broken for stop thinking edition.
-        /*if( this.i != 0 && !lookahead ) { 
-            while (((this.meat.events[this.i].time - this.meat.events[this.i-1].time) < lookahead))
+        if( this.i != 0 && !slave) { 
+            while (((this.meat.events[this.i].time - this.meat.events[this.i-1].time) <= this.lookahead))
             {
                 this.grindOnce(true);
             }
-        }*/
-
-        // ensures that every keystroke triggers at least to the next note-on
-        // --disabled for stop thinking edition--
-        /*if( !ons && this.i != 0) {
-            this.grindOnce();
-        }*/
+        }
     }
 
     // helper function for backwardGrind and 

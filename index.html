@@ -17,8 +17,8 @@
 		</div>
     <div id="grindinfo"></div>
     <div id="selinst"></div></div>
-    <img id="grinder" src="img/grinder0.png">
     <button id="beginbtn" onmousedown="begingrind()" style="width: 100%"><center>Begin grind</center></button>
+    <img id="grinder" src="img/grinder0.png">
     <script src='https://surikov.github.io/webaudiofont/npm/dist/WebAudioFontPlayer.js'></script>
     <script src="Midi.js"></script>
     <script src="grindr.js"></script>
@@ -124,11 +124,17 @@
     // on change item, change insti to program number & dynamically load file?
     let selectInst =  function(e) { 
       insti = document.getElementById('selins').selectedIndex;
+      unloadInstrument(presetname);
       presetname = "_tone_" + player.loader.instrumentKeys()[insti];
+      loadInstrument();
     };
 
     document.getElementById('selins').onchange = selectInst;
     selectInst(0);
+
+    function unloadInstrument(varname) {
+      window[varname] = {};
+    }
 
     function loadInstrument() {
       let audiofontscript = document.createElement("script");
@@ -151,7 +157,6 @@
     }
 
     function begingrind() {
-      loadInstrument();
       // decode last loaded audio font (dynamic script load with callback fuction)
       player.loader.decodeAfterLoading(audioContext, presetname);
       // grind it
