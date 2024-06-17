@@ -35,7 +35,8 @@ function analmidi(midiobj) {
         "type": "on",
         "midi": note.midi,
         "channel": note.channel,
-        "velocity": note.velocity
+        "velocity": note.velocity,
+        "duration": midiobj.header.ticksToSeconds(note.durationTicks)
       }, parseInt(note.ticks));
       // add noteOff msg to events
       place(grinderobj, {
