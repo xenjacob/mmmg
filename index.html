@@ -60,7 +60,7 @@
       const files = e.target.files
 				if (files.length > 0){
 					const file = files[0];
-          parseFile(file);
+                    parseFile(file);
 					document.querySelector("#FileDrop #Text").textContent = file.name
 					
 				}
@@ -76,7 +76,7 @@
       reader.onload = function(e){
         const midi = new Midi(e.target.result);
         currentMidi = midi;
-        grinder = new MightyMeatyMIDIGrindr(analmidi(currentMidi));
+        grinder = new MightyMeatyMIDIGrindr(currentMidi, analmidi(currentMidi));
         displayGrindInfo();
         document.getElementById('grinder').src = "img/grinder2.png";
       }
