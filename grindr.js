@@ -9,12 +9,13 @@ let presetname;
 //let presetname = '_tone_0200_GeneralUserGS_sf2_file';
 //player.loader.decodeAfterLoading(audioContext, presetname);
 
-function NoteOn(pitch, amplitude = 0.2, dur = 999)
+function NoteOn(pitch, amplitude = 1, dur = 999)
 {
+    console.log(amplitude);
     return player.queueWaveTable(audioContext,
     audioContext.destination, window[presetname], 0,
     // pitch, max duration, amplitude
-    pitch, dur, amplitude);
+    pitch, dur, amplitude * 0.2);
 }
 
 class MightyMeatyMIDIGrindr 
@@ -34,8 +35,9 @@ class MightyMeatyMIDIGrindr
         this.strands = [];
 
         // lookahead 2 ticks
-        this.lookahead = 2;
+        this.lookahead = 50;
         
+        //legato mode is not so legato because it forces note offs in fermata passages.
         this.legatoMode = true;
         
         console.log(this);
@@ -48,7 +50,7 @@ class MightyMeatyMIDIGrindr
         // trigger currently queued events
         
         this.meat.events[this.i].ons.forEach((item) => {
-            this.meat.voices.push(NoteOn(item.midi, undefined));
+            this.meat.voices.push(NoteOn(item.midi, item.velocity));
         });
                                              
         this.meat.events[this.i].offs.forEach((item) => {
